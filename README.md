@@ -47,3 +47,4 @@ mvn spring-boot:run
 ## TODO
 * add a way to reset your password
 * add an example application.properties file to the public repository
+* Switch to JWT 
