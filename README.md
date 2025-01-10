@@ -3,6 +3,9 @@
 A simple application written in spring boot. This repository is a public mirror since I wanted to show the progress to my friends without having to add them to the main repo.
 Since we all like to play card games like poker, I decided to create this simple project to make it easier to manage them.
 
+
+Since the production version of Hillock is meant to be private (and the frontend is not ready yet) in order to create an account you would have to request an invite code from the administrator. In other words, as of right now, there's not much I can show beside the swagger api docs.
+
 # Credits
 
 * CaptainRexPL
@@ -10,7 +13,7 @@ Since we all like to play card games like poker, I decided to create this simple
 
 # Requirements
 
-* PostgreSQL database with the schema (check out db-structure.md for details)
+* PostgreSQL database with the schema (check out db-structure.md for details) (NOTE: the schema is not fully up to date after the latest changes, I'll update it soon)
 * A mailgun account if you want to automatically verify accounts (in theory you could just use local emails and verify them manually)
 * Java 21 and maven 3
 
@@ -21,15 +24,16 @@ If you haven't done so already, set up the database server and the database sche
 
 ### Clone the repository
 ```bash
-git clone https://github.com/CaptainRexPL/hillock-public
+git clone https://github.com/CaptainRexPL/Hillock
 ```
 
 ### Create the application.properties and fill it out
- 
-I'll post an example soon&trade;
 
-### Compile and run the project 
-Use either 
+Create a file called `application.properties` in the `src/main/resources` directory. An example file can be in application.properties.example. Fill out the properties with your own values.
+
+
+### Compile and run the project
+Use either
 ```bash
 mvn clean install
 ```
@@ -47,4 +51,3 @@ mvn spring-boot:run
 ## TODO
 * add a way to reset your password
 * add an example application.properties file to the public repository
-* Switch to JWT 

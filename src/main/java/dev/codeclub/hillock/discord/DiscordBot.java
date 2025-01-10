@@ -98,7 +98,7 @@ public class DiscordBot {
 
     private void registerCommands() {
         LOGGER.info("Registering Discord commands...");
-        long startTime = System.nanoTime();
+        long startTime = System.nanoTime(); 
         ApplicationCommandRequest inviteCode = ApplicationCommandRequest.builder()
                 .name("invite")
                 .description("Stwórz zaproszenie do systemu Hillock")

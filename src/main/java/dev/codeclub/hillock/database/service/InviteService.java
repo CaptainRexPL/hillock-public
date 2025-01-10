@@ -60,10 +60,10 @@ public class InviteService {
     // UPDATE
     public Invite updateInvite(Long id, Invite updatedInvite) {
         if (inviteRepository.existsById(id)) {
-            updatedInvite.setId(id);
+            updatedInvite.setId(id);  // Set the ID to the provided ID for the update
             return inviteRepository.save(updatedInvite);
         }
-        return null;
+        return null;  // or throw an exception
     }
 
     public Invite redeemInvite(Long id) {
@@ -81,6 +81,6 @@ public class InviteService {
             inviteRepository.deleteById(id);
             return true;
         }
-        return false;
+        return false;  // or throw an exception
     }
 }

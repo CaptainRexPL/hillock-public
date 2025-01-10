@@ -54,7 +54,7 @@ public class BrutusService {
     }
 
     private String extractClientIp(HttpServletRequest request) {
-        String clientIp = request.getHeader("X-Forwarded-For"); 
+        String clientIp = request.getHeader("X-Forwarded-For");
         if (clientIp == null || clientIp.isEmpty() || "unknown".equalsIgnoreCase(clientIp)) {
             clientIp = request.getRemoteAddr();
         }

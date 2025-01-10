@@ -43,7 +43,6 @@ public class RateLimitFilter extends OncePerRequestFilter {
                     .addLimit(Bandwidth.simple(requestsPerSecond, Duration.ofSeconds(1)))
                     .build());
         } catch (ExecutionException e) {
-            // Handle the exception and return a default bucket
             Bucket defaultBucket = Bucket.builder()
                     .addLimit(Bandwidth.simple(requestsPerSecond, Duration.ofSeconds(1)))
                     .build();

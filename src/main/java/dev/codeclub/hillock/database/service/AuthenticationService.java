@@ -3,26 +3,21 @@ package dev.codeclub.hillock.database.service;
 import dev.codeclub.hillock.database.model.Invite;
 import dev.codeclub.hillock.database.model.User;
 import dev.codeclub.hillock.database.repository.InviteRepository;
-import dev.codeclub.hillock.database.repository.UserRepository;
-import dev.codeclub.hillock.enums.Role;
 import dev.codeclub.hillock.http.AppUrlProvider;
 import dev.codeclub.hillock.http.HttpException;
 import dev.codeclub.hillock.http.model.*;
+import dev.codeclub.hillock.http.service.RefreshTokenService;
 import dev.codeclub.hillock.mail.Email;
-import dev.codeclub.hillock.security.ApiToken;
-import dev.codeclub.hillock.security.PasswordHashing;
-import dev.codeclub.hillock.security.TokenCrypter;
-import dev.codeclub.hillock.security.VerificationToken;
+import dev.codeclub.hillock.security.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.*;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
@@ -33,25 +28,27 @@ public class AuthenticationService {
     private static Logger LOGGER = LogManager.getLogger(AuthenticationService.class);
 
     private final UserService userService;
-    private final PasswordHashing passwordHashing;
     private final InviteRepository inviteRepository;
     private final TokenCrypter tokenCrypter;
-    private final BrutusService brutusService;
-    private final UserRepository userRepository;
     private final AppUrlProvider urlProvider;
     private final Email emailService;
+    private final RefreshTokenService refreshTokenService;
+    private final AuthenticationManager authenticationManager;
 
-    @Autowired
-    public AuthenticationService(UserService userService, PasswordHashing passwordHashing, InviteRepository inviteRepository, TokenCrypter tokenCrypter, BrutusService brutusService,
-                                 UserRepository userRepository, Email emailService, AppUrlProvider urlProvider) {
+    public AuthenticationService(UserService userService,
+                                 InviteRepository inviteRepository,
+                                 TokenCrypter tokenCrypter,
+                                 Email emailService,
+                                 AppUrlProvider urlProvider,
+                                 RefreshTokenService refreshTokenService,
+                                 AuthenticationManager authenticationManager) {
         this.userService = userService;
-        this.passwordHashing = passwordHashing;
         this.inviteRepository = inviteRepository;
         this.tokenCrypter = tokenCrypter;
-        this.brutusService = brutusService;
-        this.userRepository = userRepository;
         this.emailService = emailService;
         this.urlProvider = urlProvider;
+        this.refreshTokenService = refreshTokenService;
+        this.authenticationManager = authenticationManager;
     }
 
     public VerifyResponse verify(String namespace, String token) {
@@ -69,7 +66,7 @@ public class AuthenticationService {
                     return new VerifyResponse(false, "email already confirmed");
                 }
                 user.setEmailverified(true);
-                userRepository.save(user);
+                userService.updateUser(user.getId(), user);
                 return new VerifyResponse(true, "email confirmed");
             } else {
                 throw new HttpException.BadRequestException("invalid token");
@@ -79,7 +76,7 @@ public class AuthenticationService {
         }
     }
 
-    public CreateAccountResponse createAccount(CreateAccountRequest req) throws HttpException.BadRequestException {
+    public CreateAccountResponse createAccount(CreateAccountRequest req) throws HttpException.BadRequestException, IllegalArgumentException {
         if (req.username() == null) {
             throw new HttpException.BadRequestException("name missing");
         } else if (!isNicknameValid(req.username())) {
@@ -113,7 +110,9 @@ public class AuthenticationService {
         }
         User newUser = userService.createUser(req.username(), req.email(), req.password(), invite.get());
         sendVerificationEmail(newUser);
-        return new CreateAccountResponse(newUser.toPublic(), createToken(newUser));
+
+        AuthResponse auth = refreshTokenService.generateRefreshToken(newUser);
+        return new CreateAccountResponse(newUser.toPublic(), auth.getAccessToken(), auth.getRefreshToken());
     }
 
     public static boolean isNicknameValid(String nickname) {
@@ -131,53 +130,31 @@ public class AuthenticationService {
     }
 
     public LoginResponse login(LoginRequest req) {
-        if (req.email() == null || req.email().isBlank()) {
-            brutusService.handleFailedLoginAttempt(null);
-            throw new HttpException.BadRequestException("email missing");
-        } else if (req.password() == null || req.password().isBlank()) {
-            brutusService.handleFailedLoginAttempt(req.email());
-            throw new HttpException.BadRequestException("password missing");
-        }
-        Optional<User> user;
-        user = userService.getUserByEmail(req.email());
-        if (user.isEmpty()) {
-            brutusService.handleFailedLoginAttempt(req.email());
-            throw new HttpException.BadRequestException("invalid email or password");
-        }
-        User currentUser = user.get();
-        if (passwordHashing.verify(req.password().toCharArray(), currentUser.getHashedpassword().toCharArray())) {
-            if (!currentUser.getEmailverified()) {
-                sendVerificationEmail(currentUser);
-                throw new HttpException.BadRequestException("Email not verified");
-            }
-            if (currentUser.getDisabled()) {
-                throw new HttpException.ForbiddenException("Account banned");
-            }
-            currentUser.setNewLogin(brutusService.getClientIp());
-            userRepository.save(currentUser);
-            return new LoginResponse(UserResponse.fromDbUser(user.get()), createToken(user.get()));
-        } else {
-            currentUser.setNewFailedLogin(brutusService.getClientIp());
-            brutusService.handleFailedLoginAttempt(req.email());
-            userRepository.save(currentUser);
-            throw new HttpException.BadRequestException("invalid email or password");
-        }
-    }
-
-    /**
-     * Create an API token
-     * @param user to authenticate with
-     * @return token
-     */
-    public String createToken(User user) {
-        ApiToken apiToken = new ApiToken(user.getId(), Role.valueOf(user.getRole()), userService);
-        String token;
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(req.email(), req.password());
         try {
-            token = apiToken.serialize(tokenCrypter);
-        } catch (IOException e) {
-            throw new HttpException.ServerErrorException("token generation error", e);
+            Authentication authentication = authenticationManager.authenticate(authToken);
+            if (authentication.isAuthenticated()) {
+                User user = ((CustomUserDetails) authentication.getPrincipal()).getUser();
+                AuthResponse auth = refreshTokenService.generateRefreshToken(user);
+                return new LoginResponse(UserResponse.fromDbUser(user), auth.getAccessToken(), auth.getRefreshToken());
+            } else {
+                throw new BadCredentialsException("Invalid credentials");
+            }
+        } catch (Exception e) {
+            String email = req.email().isBlank() ? null : req.email();
+            userService.getUserByEmail(req.email()).ifPresent(user -> {
+                if (e instanceof DisabledException && !user.getEmailverified()) {
+                    sendVerificationEmail(user);
+                }
+            });
+            if (e instanceof DisabledException){
+                throw new DisabledException("Account not verified");
+            }
+            if (e instanceof LockedException) {
+                throw new LockedException("Account locked");
+            }
+            throw e;
         }
-        return token;
     }
 
     private void sendVerificationEmail(User user) {

@@ -8,17 +8,11 @@ import dev.codeclub.hillock.database.model.Invite;
 import dev.codeclub.hillock.database.model.User;
 import dev.codeclub.hillock.database.repository.UserRepository;
 import dev.codeclub.hillock.enums.Role;
-import dev.codeclub.hillock.http.AppUrlProvider;
 import dev.codeclub.hillock.http.HttpException;
 import dev.codeclub.hillock.http.model.GetUserRequest;
-import dev.codeclub.hillock.http.model.GetUserResponse;
 import dev.codeclub.hillock.http.model.UpdateUserRequest;
 import dev.codeclub.hillock.http.model.UserResponse;
-import dev.codeclub.hillock.mail.Email;
 import dev.codeclub.hillock.model.UpdateUserResult;
-import dev.codeclub.hillock.security.PasswordHashing;
-import dev.codeclub.hillock.security.TokenCrypter;
-import dev.codeclub.hillock.security.VerificationToken;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,16 +20,13 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.regex.Pattern;
-
-import java.io.IOException;
 
 @Service
 public class UserService {
@@ -46,18 +37,18 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final InviteService inviteService;
-    private final PasswordHashing passwordHashing;
+    private final PasswordEncoder encoder;
 
     @Autowired
-    public UserService(UserRepository userRepository, InviteService inviteService, PasswordHashing passwordHashing) {
+    public UserService(UserRepository userRepository, InviteService inviteService, PasswordEncoder encoder) {
         this.userRepository = userRepository;
         this.inviteService = inviteService;
-        this.passwordHashing = passwordHashing;
+        this.encoder = encoder;
     }
 
     // CREATE
     public User createUser(String username, String email, String password, Invite invite) {
-        String hashedPassword = passwordHashing.hash(password);
+        String hashedPassword = encoder.encode(password);//passwordHashing.hash(password);
         Random random = new Random();
         int generatorId = random.nextInt(64);
         System.out.println("Generator ID: " + generatorId);
@@ -136,7 +127,7 @@ public class UserService {
     }
 
     // READ (find all)
-    public List<User> getAllUses() {
+    public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
@@ -144,10 +135,10 @@ public class UserService {
     @CacheEvict(value = "users", key = "#id")
     public User updateUser(Long id, User updatedUser) {
         if (userRepository.existsById(id)) {
-            updatedUser.setId(id); 
+            updatedUser.setId(id);  // Set the ID to the provided ID for the update
             return userRepository.save(updatedUser);
         }
-        return null;
+        return null;  // or throw an exception
     }
 
     // DELETE
@@ -157,7 +148,7 @@ public class UserService {
             userRepository.deleteById(id);
             return true;
         }
-        return false;
+        return false;  // or throw an exception
     }
 
     private UpdateUserResult updateUser(Long userId, UpdateUserRequest req, Function<User, UpdateUserResult> updateFunction) {
@@ -207,7 +198,7 @@ public class UserService {
             if (password.isBlank()) {
                 return new UpdateUserResult(false, "Password cannot be empty or white space only", null);
             } else {
-                user.setHashedpassword(passwordHashing.hash(password));
+                user.setHashedpassword(encoder.encode(password));
                 userRepository.save(user);
             }
         }
@@ -322,7 +313,7 @@ public class UserService {
     }
 
     public List<User> getLeaderboard(int limit) {
-        Pageable pageable = PageRequest.of(0, limit);
+        Pageable pageable = PageRequest.of(0, limit); // ograniczenie do 'limit' wyników
         List<User> leaderboard = userRepository.getLeaderboard(pageable);
         return leaderboard;
     }

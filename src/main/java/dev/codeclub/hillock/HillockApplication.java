@@ -28,10 +28,11 @@ import java.util.concurrent.Executor;
 @EnableConfigurationProperties(DiscordConfiguration.class)
 @SecurityScheme(
 		name = "Authentication Token",
-		scheme = "",
-		type = SecuritySchemeType.APIKEY,
+		type = SecuritySchemeType.HTTP,
+		scheme = "bearer",
+		bearerFormat = "JWT",
 		in = SecuritySchemeIn.HEADER,
-		paramName = "X-Brutus-Token"
+		paramName = "Authorization"
 )
 public class HillockApplication {
 
@@ -50,9 +51,9 @@ public class HillockApplication {
 		return new OpenAPI()
 				.info(new io.swagger.v3.oas.models.info.Info()
 						.title("Hillock")
-						.description("No description provided")
+						.description("Hillock API")
 						.version("1.0.0-dev"))
-				.addServersItem(new io.swagger.v3.oas.models.servers.Server().url(serverUrl));
+				.addServersItem(new io.swagger.v3.oas.models.servers.Server().url(serverUrl)); // URL wczytany z application.properties
 	}
 
 	@Bean(name = "discordBotExecutor")

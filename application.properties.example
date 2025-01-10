@@ -1,0 +1,55 @@
+spring.application.name=hillock
+#springdoc.api-docs.path=/api-docs
+server.port=8080
+spring.cache.type=simple
+spring.datasource.url=
+spring.datasource.username=
+spring.datasource.password=
+spring.jpa.hibernate.ddl-auto=update
+
+discord.enabled=true
+discord.token=
+discord.guild=
+discord.accessRole=
+discord.adminRole=
+discord.alertsChannel=
+
+hillock.baseurl: http://localhost:8080
+
+mailing.service=local
+mailgun.domain=
+mailgun.api-key=
+
+#security.token.password=
+
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+logging.level.org.springframework=INFO
+logging.level.root=INFO
+logging.level.org.springdoc=DEBUG
+logging.level.io.swagger.v3.core=DEBUG
+logging.level.org.hibernate.SQL=DEBUG
+logging.level.org.hibernate.type.descriptor.sql.BasicBinder=TRACE
+logging.level.org.hibernate.orm.jdbc.bind=TRACE
+logging.file.name=logs/latest.log
+logging.logback.rollingpolicy.max-file-size=10MB
+logging.logback.rollingpolicy.max-history=7
+
+cors.enabled=true
+cors.allowed-origins=http://localhost:5173
+cors.allowed-methods=GET, POST, PUT, DELETE, OPTIONS
+cors.allowed-headers=Origin, X-Requested-With, Content-Type, Accept, Authorization
+cors.allow-credentials=true
+cors.max-age=3600
+cors.mapping=/api/*
+
+#spring.web.cors.allowed-origins=*
+#spring.web.cors.allowed-methods=GET, POST, PUT, DELETE, OPTIONS
+#spring.web.cors.allowed-headers=Origin, X-Requested-With, Content-Type, Accept, Authorization
+#spring.web.cors.allow-credentials=true
+#spring.web.cors.max-age=3600
+#spring.web.cors.mapping=/api/*
+#spring.web.cors.enabled=true
+#spring.web.cors.supports-credentials=true
+#spring.web.cors.filter-order=1
