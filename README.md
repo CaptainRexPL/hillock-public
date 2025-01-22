@@ -15,7 +15,7 @@ Since the production version of Hillock is meant to be private (and the frontend
 
 # Requirements
 
-* PostgreSQL database with the schema (check out db-structure.md for details) (NOTE: the schema is not fully up to date after the latest changes, I'll update it soon)
+* PostgreSQL database with the schema (check out db-structure.md for details)
 * A mailgun account if you want to automatically verify accounts (in theory you could just use local emails and verify them manually)
 * Java 21 and maven 3
 

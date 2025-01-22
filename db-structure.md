@@ -9,12 +9,12 @@ CREATE TABLE public.failed_login_attempts (
 	CONSTRAINT failed_login_attempts_pkey PRIMARY KEY (id)
 );
 
-CREATE TABLE public.unathorized_attempts (
-	id bigserial NOT NULL,
+CREATE TABLE public.unauthorized_attempts (
+	id int8 NOT NULL,
 	ip_address varchar(25) NOT NULL,
 	profile_id int8 NULL,
-	"timestamp" timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	CONSTRAINT unathorized_attempts_pkey PRIMARY KEY (id)
+	"timestamp" timestamptz(6) DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	CONSTRAINT unauthorized_attempts_pkey PRIMARY KEY (id)
 );
 
 CREATE TABLE public.invites (
@@ -49,5 +49,15 @@ CREATE TABLE public.users (
 	CONSTRAINT users_pkey PRIMARY KEY (id),
 	CONSTRAINT users_username_key UNIQUE (username),
 	CONSTRAINT invitecode FOREIGN KEY (inviteid) REFERENCES public.invites(id)
+);
+
+CREATE TABLE public.refresh_tokens (
+	id bigserial NOT NULL,
+	created_at timestamp(6) NOT NULL,
+	expiresat timestamp(6) NOT NULL,
+	refresh_token varchar(255) NOT NULL,
+	user_id int8 NULL,
+	CONSTRAINT refresh_tokens_pkey PRIMARY KEY (id),
+	CONSTRAINT user_id FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
 ```
