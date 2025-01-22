@@ -27,6 +27,18 @@ public class InviteService {
     }
 
     public InviteResponse createInvite(String inviteCode, User user) {
+        if (inviteCode == null || inviteCode.isBlank()) {
+            throw new HttpException.BadRequestException("Invite code missing");
+        }
+        if (getInviteByCode(inviteCode).isPresent()) {
+            throw new HttpException.BadRequestException("Invite code already exists");
+        }
+        //TODO: remove this once the event is over
+        if (user == null) {
+            Invite invite = new Invite(inviteCode, -1L, false);
+            createInvite(invite);
+            return InviteResponse.FromDbInvite(invite);
+        }
         if (user.getDiscordid() == null) {
             throw new HttpException.NotFoundException("User not found");
         }

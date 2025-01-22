@@ -114,7 +114,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        return isExcludedRequest(request) || isNoAuthAnnotated(request, handlerMapping);
+        //return isExcludedRequest(request) || isNoAuthAnnotated(request, handlerMapping);
+        //TODO: This is a temporary solution, hopefully there is a better way to handle this
+        if (isExcludedRequest(request) || isNoAuthAnnotated(request, handlerMapping)) {
+            LOGGER.info("Request without filter for: {}", getClientIp(request));
+            return true;
+        }
+        return false;
     }
 
     private boolean isNoAuthAnnotated(HttpServletRequest request, RequestMappingHandlerMapping handlerMapping) {

@@ -51,7 +51,7 @@ public class SecurityConfig {
 
     public SecurityConfig(
             CustomUserDetailsService userDetailsService,
-            @Value("${security.jwt.excluded-urls:/api/account/**,/swagger-ui/**,/v3/api-docs/**,/swagger-resources/**,/webjars/**}") String excludedUrls,
+            @Value("${security.jwt.excluded-urls:/api/account/**,/swagger-ui/**,/v3/api-docs/**,/swagger-resources/**,/webjars/**},/api/invites") String excludedUrls,
             JwtService jwtService,
             BrutusService brutusService,
             RequestMappingHandlerMapping handlerMapping

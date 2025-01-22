@@ -1,5 +1,6 @@
 package dev.codeclub.hillock.controller;
 
+import dev.codeclub.hillock.annotations.NoAuth;
 import dev.codeclub.hillock.database.model.Invite;
 import dev.codeclub.hillock.database.model.User;
 import dev.codeclub.hillock.database.service.InviteService;
@@ -42,10 +43,14 @@ public class InviteController {
             @ApiResponse(responseCode = "400", description = "User not found; you have to link your discord account first to create an invite.")
     })
     @PostMapping
-    @PreAuthorize("@userDetailsService.isAtLeastInRole('ADMIN')")
+    //@PreAuthorize("@userDetailsService.isAtLeastInRole('ADMIN')")
+    @NoAuth
     public ResponseEntity<?> createInvite(Authentication authentication, @RequestBody CreateInviteRequest createInviteRequest) {
-        User user = ((CustomUserDetails)authentication.getPrincipal()).getUser();
         try {
+            User user = null;
+            if (authentication != null) {
+                user = ((CustomUserDetails)authentication.getPrincipal()).getUser();
+            }
             InviteResponse inviteResponse = inviteService.createInvite(createInviteRequest.invite(), user);
             return new ResponseEntity<>(inviteResponse, HttpStatus.CREATED);
         } catch (HttpException.BadRequestException e) {
