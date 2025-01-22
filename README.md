@@ -11,7 +11,7 @@ Since the production version of Hillock is meant to be private (and the frontend
 # Credits
 
 * CaptainRexPL
-* [collarmc/collar](https://github.com/collarmc/collar) - email template, current code that handles token generation and password hashing
+* [collarmc/collar](https://github.com/collarmc/collar) - email template
 
 # Requirements
 
