@@ -3,11 +3,6 @@
 A simple application written in spring boot. This repository is a public mirror since I wanted to show the progress to my friends without having to add them to the main repo.
 Since we all like to play card games like poker, I decided to create this simple project to make it easier to manage them.
 
-
-Since the production version of Hillock is meant to be private (and the frontend is not ready yet) in order to create an account you would have to request an invite code from the administrator. In other words, as of right now, there's not much I can show beside the swagger api docs.
-
-# Warning for anyone who decides to try to use the endponts on the production server: All instances of unauthorised attempts of using any of the endpoints are logged (the info logged includes ip addresses) as a way of preventing break-ins. 
-
 # Credits
 
 * CaptainRexPL
