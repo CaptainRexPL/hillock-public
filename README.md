@@ -53,3 +53,12 @@ mvn spring-boot:run
 
 You can find api docs [here](http://hillock.live/swagger-ui/index.html)
 
+## Usage of the production version
+Since there's no actual web app, here's what you need to do to use the production version:
+1. Open the swagger page
+2. Generate an invite code with the /api/invites endpoint
+3. Create a user with the /api/account/create endpoint
+4. Verify your email (since mailgun is sometimes getting ratelimited, you might need to wait a bit)
+5. Log in with the /api/account/login endpoint
+6. That's it! You can now use almost all of the endpoints
+
