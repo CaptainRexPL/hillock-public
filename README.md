@@ -6,7 +6,7 @@ Since we all like to play card games like poker, I decided to create this simple
 ## Usage of the production version
 Since there's no actual web app (yet), here's what you need to do to use the production version:
 1. Open the swagger page
-2. Generate an invite code with the /api/invites endpoint
+2. Register a new invite code with the /api/invites endpoint (one of the private instances that I host is meant to be private. Hence the need for that endpoint, the public instance just doesn't require the admin role to actually use it)
 3. Create a user with the /api/account/create endpoint
 4. Verify your email (since mailgun is sometimes getting ratelimited, you might need to wait a bit)
 5. Log in with the /api/account/login endpoint
